@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://unpkg.com/launchdarkly-js-client-sdk@3"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airport Departure Board</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <label for="terminal-select">Choose a terminal:</label>
+    <select id="terminal-select">
+        <option value="terminal1">Terminal 1</option>
+        <option value="terminal2">Terminal 2</option>
+        <option value="lounge">1st Class Lounge</option>
+    </select>
+    <h1 id="board-banner"></h1>
+    <table id="flights-table">
+        <thead>
+            
+        </thead>
+        <tbody>
+            <!-- Flight data will be populated here by JavaScript -->
+        </tbody>
+    </table>
+    <script src="scripts/app.js"></script>
+</body>
+</html>
