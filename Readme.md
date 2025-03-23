@@ -86,6 +86,11 @@ Build the container image
 ```
 $ docker build -t airboardserver .
 ```
+### Environment variables
+```
+# The SDK key for your deployment.
+SDK_KEY=
+```
 
 Run the container image
 
@@ -128,7 +133,7 @@ $ docker build -t airboardfe .
 
 Run the container image
 ```
-podman run -d -p 8082:80 --name airboardfe --network=ldnet airboardfe
+docker run -d -p 8082:80 --name airboardfe --network=ldnet airboardfe
 ```
 
 Test by connecting to the site
@@ -141,6 +146,22 @@ This proves connectivity between the front end and the server.
 ## Building airboardCLI
 Switch into the airboardCLI subdirectory
 
+### Environment variables
+```
+# The SDK key for your deployment.
+LAUNCHDARKLY_SDK_KEY=
+
+# This is an appication user to determine permissions.
+LD_USER=
+
+# This is an application setting to determine permissions.
+LD_LOCATION=
+
+# A debug variable for the platform.
+LD_DEBUG=
+```
+
+Switch into the ```airboardCLI``` subdirectory
 ```
 $ cd airboardCLI
 ```
@@ -151,6 +172,11 @@ $ docker build -t airboardcli .
 ```
 
 Run the docker container
-```
-podman run -i --name=airboardcli --network=ldnet -e LAUNCHDARKLY_SDK_KEY=your_sdk_key airboardcli:latest
+```shell
+$ docker run --rm -i --name=airboardcli --network=ldnet \
+                                        -e LAUNCHDARKLY_SDK_KEY=your_sdk_key \
+                                        -e LD_USER=your_launchdarkly_user \
+                                        -e LD_LOCATION=your_location \
+                                        -e LD_DEBUG=false \
+                                        airboardcli
 ```
