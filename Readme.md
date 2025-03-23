@@ -25,6 +25,7 @@ It has two versions, version 1.0, and verison 2.0. The version can be updated dy
 
 ### Dynamically switch the colour scheme from light to dark.
 The colour scheme can be dynamically updated by creating and setting the ```dark_mode``` flag to true. This doesn't require a restart or reload of the application.
+
 ![image info](images/ls_dark_mode_flag.png)
 
 
