@@ -11,9 +11,11 @@ COPY ./src/* /app
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Set environment variable (can be overridden at runtime)
-ENV USER=myork
+# Set LaunchDarkly environment variables (can be overridden at runtime)
+ENV LD_USER=
 ENV LAUNCHDARKLY_SDK_KEY=
+ENV LD_LOCATION=
+ENV LD_DEBUG=
 
 # Set the entrypoint to run the script interactively
 ENTRYPOINT ["python", "cli.py"]

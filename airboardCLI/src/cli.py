@@ -1,24 +1,55 @@
-import os
 import ldclient
 from ldclient.config import Config
-from ldclient import Context
+from ldclient.context import Context
+import os, sys
 import requests
 import random
 import datetime
 
-def main():
-    user =  getUser()
-    sdk_key = getLDSDKKey()
-    multi_context = createLDContext(user)
 
-    ldclient.set_config(Config(sdk_key))
-    can_update_db = allowed_to_update(multi_context)
-    print(f'The user {user} is allowed to update the database.') 
+def printParams():
+    if debug:
+        print("\033[94mscript executed...\033[0m")
+        print("\033[94mLD_USER: ", os.environ['LD_USER'], "\033[0m")
+        print("\033[94mLAUNCHDARKLY_SDK_KEY: ", os.environ['LAUNCHDARKLY_SDK_KEY'], "\033[0m")
+        print("\033[94mLD_LOCATION: ", os.environ['LD_LOCATION'], "\033[0m")
 
-    if can_update_db:
-        update_server()
+# Function to create a LaunchDarkly context
+def createLDContext(user):
+    # Create a context for the user
+    user_context = Context.builder(f'{user}-cli-key').kind('user').name(f'{user}-cli-user').build()
+    location_context = Context.builder('office-key').kind('location').name(f'{location}').build()
+    multi_context = Context.create_multi(user_context, location_context)
+    return multi_context
+
+# Function to check feature flag
+def check_cli_allowed(user, flag_key):
+    if not ldclient.get():
+        print("\033[91mLaunchDarkly client is not initialized.\033[0m")
+        return False
+    
+    context = createLDContext(user)
+    client = ldclient.get()
+    flag_value = client.variation(flag_key, context, False)  # Default to False if flag isn't found
+    if debug:
+        print(f"\033[94mFeature flag '{flag_key}' for user '{user}': {flag_value}\033[0m")
+    return flag_value
+
+# Function to check feature flag
+def check_update_allowed(user, flag_key):
+    if not ldclient.get():
+        print("\033[91mLaunchDarkly client is not initialized.\033[0m")
+        return False
+    
+    context = createLDContext(user)
+    client = ldclient.get()
+    flag_value = client.variation(flag_key, context, False)  # Default to False if flag isn't found
+    if debug:
+        print(f"\033[94mFeature flag '{flag_key}' for user '{user}': {flag_value}\033[0m")
+    return flag_value
 
 def update_server():
+    print(f'Updating the server with content from my location {location}...')
     for i in range (1,20):
 
         # Define the endpoint
@@ -30,7 +61,6 @@ def update_server():
         # Print response
         print("Status Code:", response.status_code)
         #print("Response Body:", response.text)
-        
 
 def generate_flight_data(flight_number: int):
     return {
@@ -47,40 +77,77 @@ def generate_flight_data(flight_number: int):
     }
 
 
-def allowed_to_update(multi_context):
-    # Only users with a name of "myork" and a location of "office" are allowed to update the database.
-    allow_db_update = ldclient.get().variation(key='allow_db_populate',context=multi_context,default=False)
+if __name__ == "__main__":
+
+    ## Set the debug mode based on the environment variable
+    try:
+        if os.environ['LD_DEBUG'].lower() == "true":
+            debug = True
+        else:
+            debug = False
+    except KeyError:
+        debug = False
     
-    return allow_db_update
 
-def createLDContext(user):
-    # Create a context for the user
-    user_context = Context.builder(f'{user}-cli-key').kind('user').name(f'{user}-cli-user').build()
-    location_context = Context.builder(f'office-key').kind('location').name('office').build()
-    multi_context = Context.create_multi(user_context, location_context)
-    return multi_context
-
+    ## Set the environment variables for LaunchDarkly user, SDK key, and location
+    try:
+        user = os.environ['LD_USER']
+    except KeyError:
+        print("Please set the LD_USER environment variable.")
+        sys.exit(1)
     
-def setupLD(sdk_key):
+    try:
+        sdk_key = os.environ['LAUNCHDARKLY_SDK_KEY']
+    except KeyError:
+        print("Please set the LAUNCHDARKLY_SDK_KEY environment variable.")
+        sys.exit(1)
+    
+    try:
+        location = os.environ['LD_LOCATION']
+    except KeyError:
+        print("Please set the LD_USER, LAUNCHDARKLY_SDK_KEY, and LD_LOCATION environment variables.")
+        sys.exit(1)
 
-    if not ldclient.get().is_initialized():
-        print("*** SDK failed to initialize. Please check your internet connection and SDK credential for any typo.")
-        exit()
-    print("*** SDK successfully initialized")
+    # Print some debug of the application parameters
+    printParams()
+    
+    ## For this example, we are setting the update_flag_key to the feature flag key that allows database population.
+    ## If false, the script will not populate the database.
+    update_flag_key = "allow_db_populate"  
+    cli_allowed_key = "cli_allowed"  
+    
 
-def getLDSDKKey():
-    sdk_key = os.environ['LAUNCHDARKLY_SDK_KEY']
+    # Initialize LaunchDarkly client
+    ldclient.set_config(Config(sdk_key))
 
-    if not sdk_key:
-        print("*** Please set the LAUNCHDARKLY_SDK_KEY env first")
-        exit()
+
+    #############################
+    ##### Location checking #####
+    #############################
+    
+    ## We now check if the user is allowed to update to use the CLI from this location based on the feature flag value.
+    cli_allowed = check_cli_allowed(user, cli_allowed_key)
+    if not cli_allowed:
+        print(f"\033[91mUser {user} is not allowed to run the CLI from {location}.\033[0m")
+        sys.exit(0)
     else:
-        print("SDK key successfully found.")
-    return sdk_key
+        print(f"\033[92mUser {user} is running from an approved location ({location}).\033[0m")
 
 
-def getUser():
-    return os.environ['USER']
+    #############################
+    #####   User checking   #####
+    #############################
 
-if __name__ == '__main__':
-    main()
+    ## We now check if the user is allowed to update the database based on the feature flag value.
+    update_allowed = check_update_allowed(user, update_flag_key)
+    
+    if not update_allowed:
+        print(f"\033[91mUser {user} is not allowed to update the database.\033[0m")
+        sys.exit(0)
+    else:
+        print(f"\033[92mUser {user} is allowed to update the database.\033[0m")
+        update_server()
+
+    # Close the LaunchDarkly client before exiting
+    print("Closing LaunchDarkly client...")
+    ldclient.get().close()
