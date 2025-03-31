@@ -54,11 +54,11 @@ All three components of this application are containerised. They will work with 
 ### Clone the repository
 Clone the repository 
 ```shell
-$ git clone https://github.com/my0373/airboard.git
+ git clone https://github.com/my0373/airboard.git
 ```
 Switch into the git repository
 ```shell
-$ cd airboard
+ cd airboard
 ```
 
 ### Create the Docker / Podman network
@@ -67,12 +67,12 @@ $ cd airboard
  From the command line of your mac / Linux system.
 
  ```shell
- $ docker network create ldnet 
+  docker network create ldnet 
  ```
 
 You can verify the network was created correctly 
 ```shell
-$ docker network ls | grep ldnet
+ docker network ls | grep ldnet
 
    16b2c1977a48  ldnet                        bridge
 ```
@@ -80,12 +80,12 @@ $ docker network ls | grep ldnet
 Switch into the airboardServer subdirectory
 
 ```
-$ cd airboardServer
+ cd airboardServer
 ```
 
 Build the container image
 ```
-$ docker build -t airboardserver .
+ docker build -t airboardserver .
 ```
 ### Environment variables
 ```
@@ -97,13 +97,13 @@ Run the container image
 
 SDK_KEY is your Launch Darkly sdk key. __NOTE: This isn't currently implemented for airboardServer.__
 ```
-$ docker run --replace --name airboardserver --network=ldnet -d -p 8080:8080 -e SDK_KEY=your_sdk_key airboardserver
+ docker run --replace --name airboardserver --network=ldnet -d -p 8080:8080 -e SDK_KEY=your_sdk_key airboardserver
 ```
 
 You can now test the server is running by attempting to connect to http://127.0.0.1:8080/flights/
 
 ```shell
-$ curl 127.0.0.1:8080/flights/
+ curl 127.0.0.1:8080/flights/
 {
   "1": {
     "airline_name": "Delta",
@@ -124,12 +124,12 @@ Your server is now running correctly.
 Switch into the airboardFE subdirectory
 
 ```
-$ cd airboardFE
+ cd airboardFE
 ```
 
 Build the container image
 ```
-$ docker build -t airboardfe .
+ docker build -t airboardfe .
 ```
 
 Run the container image
@@ -164,17 +164,17 @@ LD_DEBUG=
 
 Switch into the ```airboardCLI``` subdirectory
 ```
-$ cd airboardCLI
+ cd airboardCLI
 ```
 
 Build the docker container
 ```
-$ docker build -t airboardcli .
+ docker build -t airboardcli .
 ```
 
 Run the docker container
 ```shell
-$ docker run --rm -i --name=airboardcli --network=ldnet \
+ docker run --rm -i --name=airboardcli --network=ldnet \
                                         -e LAUNCHDARKLY_SDK_KEY=your_sdk_key \
                                         -e LD_USER=your_launchdarkly_user \
                                         -e LD_LOCATION=your_location \
