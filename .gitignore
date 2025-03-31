@@ -4,3 +4,4 @@ run_with_options.sh
 run_with_no_cli.sh
 run_with_no_user_access.sh
 restart.sh
+runcli.sh
