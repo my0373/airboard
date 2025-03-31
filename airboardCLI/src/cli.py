@@ -20,33 +20,22 @@ def createLDContext(user):
     user_context = Context.builder(f'{user}-cli-key').kind('user').name(f'{user}-cli-user').build()
     location_context = Context.builder('office-key').kind('location').name(f'{location}').build()
     multi_context = Context.create_multi(user_context, location_context)
+    
     return multi_context
 
-# Function to check feature flag
-def check_cli_allowed(user, flag_key):
+def check_feature_flag(user, flag_key):
     if not ldclient.get():
         print("\033[91mLaunchDarkly client is not initialized.\033[0m")
         return False
     
     context = createLDContext(user)
     client = ldclient.get()
+
     flag_value = client.variation(flag_key, context, False)  # Default to False if flag isn't found
     if debug:
         print(f"\033[94mFeature flag '{flag_key}' for user '{user}': {flag_value}\033[0m")
     return flag_value
 
-# Function to check feature flag
-def check_update_allowed(user, flag_key):
-    if not ldclient.get():
-        print("\033[91mLaunchDarkly client is not initialized.\033[0m")
-        return False
-    
-    context = createLDContext(user)
-    client = ldclient.get()
-    flag_value = client.variation(flag_key, context, False)  # Default to False if flag isn't found
-    if debug:
-        print(f"\033[94mFeature flag '{flag_key}' for user '{user}': {flag_value}\033[0m")
-    return flag_value
 
 def update_server():
     print(f'Updating the server with content from my location {location}...')
@@ -126,7 +115,7 @@ if __name__ == "__main__":
     #############################
     
     ## We now check if the user is allowed to update to use the CLI from this location based on the feature flag value.
-    cli_allowed = check_cli_allowed(user, cli_allowed_key)
+    cli_allowed = check_feature_flag(user, cli_allowed_key)
     if not cli_allowed:
         print(f"\033[91mUser {user} is not allowed to run the CLI from {location}.\033[0m")
         sys.exit(0)
@@ -139,7 +128,7 @@ if __name__ == "__main__":
     #############################
 
     ## We now check if the user is allowed to update the database based on the feature flag value.
-    update_allowed = check_update_allowed(user, update_flag_key)
+    update_allowed = check_feature_flag(user, update_flag_key)
     
     if not update_allowed:
         print(f"\033[91mUser {user} is not allowed to update the database.\033[0m")

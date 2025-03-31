@@ -28,11 +28,11 @@ function main()
         const enablev2 = ldclient.variation(flagKey, false);
         const darkMode = ldclient.variation('dark_mode', false);
         const version = ldclient.variation('website_version', '1.0');
-        const label = `The ${enablev2} feature flag evaluates to ${enablev2}.`;
+        // const label = `The ${enablev2} feature flag evaluates to ${enablev2}.`;
         const white = '#ffffff';
         const dark = '#373841';
         console.log(`debug dark mode setting is: ${darkMode}`);
-        console.log(`debug v2mode setting is: ${enablev2}`);
+        // console.log(`debug v2mode setting is: ${enablev2}`);
         console.log(`debug website version is: ${version}`);
 
         
